@@ -71,10 +71,26 @@
             lg="3"
           >
             <v-card>
-              <v-card-title class="subheading grey--text">
-                {{ item.name }}
-              </v-card-title>
-
+              <v-row class="ma-5">
+                <v-col cols=11>
+                <v-card-title class="subheading grey--text pa-0">
+                  {{ item.name }}
+                </v-card-title>
+                </v-col>
+                <v-col cols="1">
+                <v-icon
+                  @click="$emit('deleteItem', i)"
+                >
+                  mdi-window-close
+                </v-icon>
+                <v-icon
+                  @click="$emit('updateItem', i)"
+                >
+                  mdi-pencil
+                </v-icon>
+                </v-col>
+              </v-row>
+              
               <v-divider></v-divider>
 
               <v-list dense>
@@ -89,6 +105,10 @@
                     class="align-end"
                     :class="{ 'grey--text': sortBy === key }"
                   >
+                    <v-input
+                      label="xxx"
+                    >
+                    </v-input>
                     {{ item[key] }}
                   </v-list-item-content>
                 </v-list-item>

@@ -39,6 +39,7 @@
       </v-row>
       <data-table
         :items="items"
+        @deleteItem="deleteItem"
       />
       </v-container>
     </v-main>
@@ -47,7 +48,7 @@
 
 <script>
 import DataTable from './components/DataTable.vue';
-import v4 from uuid
+import {v4 as uuidv4} from 'uuid'
 
 
 export default {  
@@ -116,7 +117,7 @@ export default {
         }
         let items = this.items
         let newItem = {
-          id: v4(),
+          id: uuidv4(),
           name: this.itemName,
           type: this.itemType,
           color: this.color
@@ -125,6 +126,13 @@ export default {
         this.temp = items
         localStorage.setItem('items', JSON.stringify(items) )
     },
+
+    deleteItem(i){
+      let items = this.items
+      items.splice(i,i+1)
+      this.temp= items
+      localStorage.setItem('items',JSON.stringify(items))
+    }
   },
 };
 </script>
