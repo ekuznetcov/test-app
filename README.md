@@ -1,22 +1,3 @@
-# test_app
-
-## Project setup
-```
-npm install
-```
-
-### Compiles and hot-reloads for development
-```
-npm run serve
-```
-
-### Compiles and minifies for production
-```
-npm run build
-```
-
-### Customize configuration
-See [Configuration Reference](https://cli.vuejs.org/config/).
 Пользовательский интерфейс системы представляет собой приложение
 построенное при помощи фреймворка [Vue 3](https://v3.vuejs.org/) и [Vuetify](https://vuetifyjs.com/en/)
 
