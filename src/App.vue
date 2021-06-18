@@ -1,45 +1,87 @@
 <template>
   <v-app>
-
     <v-main>
-      <v-container>
-      <v-row>
-      <v-col cols="12"
-        sm="6"
-        md="4"
-        lg="3"
+      <v-banner
+        sticky
+        shaped
       >
-        <v-color-picker v-model="color"></v-color-picker>
-      </v-col>
-      <v-col cols="12"
-        md="6"
-        lg="6"
-      >
-        <v-text-field
-          v-model="itemName"
-          label="Name"
-          :rules="rules"
-          clearable
-          hide-details="auto"
-        ></v-text-field>
-        <v-text-field class="mb-5"
-          v-model="itemType"
-          label="Type"
-          :rules="rules"
-          clearable
-          hide-details="auto"
-        >
-        </v-text-field>
         <v-btn
-          @click="saveItems"
+          fab
+          dark
+          absolute
+          right
+          large
+          color="deep-purple accent-3"
+          @click="dialog=true"
         >
-          Save
+          <v-icon>mdi-plus</v-icon>
         </v-btn>
-      </v-col>
-      </v-row>
+      </v-banner>
+      <v-container>
+        <v-dialog
+          v-model="dialog"
+          fullscreen
+          hide-overlay
+          persistent
+          transition="dialog-bottom-transition"
+        >
+          <v-card>
+            <v-toolbar
+              dark
+              color="deep-purple accent-3"
+            >
+              <v-btn
+                icon
+                dark
+                @click="dialog = false"
+              >
+                <v-icon>mdi-close</v-icon>
+              </v-btn>
+              <v-toolbar-title>Set Items</v-toolbar-title>
+              <v-spacer></v-spacer>
+              <v-toolbar-items>
+                <v-btn
+                  dark
+                  text
+                  @click="saveItem"
+                >
+                  Save
+                </v-btn>
+              </v-toolbar-items>
+            </v-toolbar>
+            <v-row>
+              <v-col cols="12"
+                sm="6"
+                md="4"
+                lg="3"
+              >
+                <v-color-picker class="ma-5" v-model="color"></v-color-picker>
+              </v-col>
+              <v-col cols="12"
+                md="6"
+                lg="6"
+              >
+                <v-text-field
+                  v-model="itemName"
+                  label="Name"
+                  clearable
+                  hide-details="auto"
+                ></v-text-field>
+                <v-text-field class="mb-5"
+                  v-model="itemType"
+                  label="Type"
+                  clearable
+                  hide-details="auto"
+                >
+                </v-text-field>
+              </v-col>
+            </v-row>
+          </v-card>
+        </v-dialog>
       <data-table
         :items="items"
         @deleteItem="deleteItem"
+        @updateItem="updateItem"
       />
       </v-container>
     </v-main>
@@ -66,13 +108,10 @@ export default {
       rgba: { r: 255, g: 0, b: 255, a: 1 },
       hsla: { h: 300, s: 1, l: 0.5, a: 1 },
       hsva: { h: 300, s: 1, v: 1, a: 1 },
-      rules: [
-        value => !!value || 'Required.',
-        value => (value && value.length >= 3) || 'Min 3 characters',
-      ],
       itemName: '',
       itemType: '',
       temp: [],
+      dialog: false,
   }),
 
   computed: {
@@ -98,41 +137,47 @@ export default {
           return []
         }
       },
-
-      showColor() {
-        if (typeof this.color === 'string') return this.color
-
-        return JSON.stringify(Object.keys(this.color).reduce((color, key) => {
-          color[key] = Number(this.color[key].toFixed(2))
-          return color
-        }, {}), null, 2)
-      },     
   },
 
   methods:{
-    saveItems(){
-        if(this.itemType.length == 0 || this.itemName == 0){
-          this.$emit('empty-input')
-          return
-        }
-        let items = this.items
-        let newItem = {
-          id: uuidv4(),
-          name: this.itemName,
-          type: this.itemType,
-          color: this.color
-        }
-        items.push(newItem)
-        this.temp = items
-        localStorage.setItem('items', JSON.stringify(items) )
+    saveItem(){
+      if(this.itemType.length == 0 || this.itemName == 0){
+        this.$emit('empty-input')
+        return
+      }
+      let items = this.items
+      let newItem = {
+        id: uuidv4(),
+        name: this.itemName,
+        type: this.itemType,
+        color: this.color
+      }
+      items.push(newItem)
+      this.temp = items
+      this.dialog = false
+      localStorage.setItem('items', JSON.stringify(items))
     },
 
-    deleteItem(i){
+    updateItem(index){
       let items = this.items
-      items.splice(i,i+1)
+      this.temp = items
+      this.itemName = items[index].name
+      this.itemType = items[index].type
+      this.hex = items[index].color
+      this.dialog = true
+    },
+
+    deleteItem(id){
+      let items = this.items
+      let index
+      for (let i in items)
+        if(items[i].id == id)
+          index= i
+      items.splice(index,index+1)
       this.temp= items
       localStorage.setItem('items',JSON.stringify(items))
-    }
+    },
+
   },
 };
 </script>

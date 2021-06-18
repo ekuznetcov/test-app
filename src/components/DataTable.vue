@@ -11,6 +11,7 @@
     >
       <template v-slot:header>
         <v-toolbar
+          fixed
           light
           class="mb-1"
         >
@@ -79,12 +80,12 @@
                 </v-col>
                 <v-col cols="1">
                 <v-icon
-                  @click="$emit('deleteItem', i)"
+                  @click="$emit('deleteItem', item.id)"
                 >
                   mdi-window-close
                 </v-icon>
                 <v-icon
-                  @click="$emit('updateItem', i)"
+                  @click="$emit('callDialog', item.id)"
                 >
                   mdi-pencil
                 </v-icon>
@@ -105,10 +106,6 @@
                     class="align-end"
                     :class="{ 'grey--text': sortBy === key }"
                   >
-                    <v-input
-                      label="xxx"
-                    >
-                    </v-input>
                     {{ item[key] }}
                   </v-list-item-content>
                 </v-list-item>
@@ -149,9 +146,7 @@
               </v-list-item>
             </v-list>
           </v-menu>
-
           <v-spacer></v-spacer>
-
           <span
             class="mr-4
             grey--text"
@@ -159,24 +154,24 @@
             Page {{ page }} of {{ numberOfPages }}
           </span>
           <span>
-          <v-btn
-            fab
-            outlined
-            color="deep-purple accent-3"
-            class="mr-1"
-            @click="formerPage"
-          >
-            <v-icon>mdi-chevron-left</v-icon>
-          </v-btn>
-          <v-btn
-            fab
-            outlined
-            color="deep-purple accent-3"
-            class="ml-1"
-            @click="nextPage"
-          >
-            <v-icon>mdi-chevron-right</v-icon>
-          </v-btn>
+            <v-btn
+              fab
+              outlined
+              color="deep-purple accent-3"
+              class="mr-1"
+              @click="formerPage"
+            >
+              <v-icon>mdi-chevron-left</v-icon>
+            </v-btn>
+            <v-btn
+              fab
+              outlined
+              color="deep-purple accent-3"
+              class="ml-1"
+              @click="nextPage"
+            >
+              <v-icon>mdi-chevron-right</v-icon>
+            </v-btn>
           </span>
         </v-row>
       </template>
@@ -214,6 +209,7 @@ export default ({
         return this.keys.filter(key => key !== 'name')
       },
     },
+
     methods: {
       nextPage () {
         if (this.page + 1 <= this.numberOfPages) this.page += 1
