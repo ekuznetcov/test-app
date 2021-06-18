@@ -12,118 +12,54 @@
           right
           large
           color="deep-purple accent-3"
-          @click="dialog=true"
+          @click="callDialog('new')"
         >
           <v-icon>mdi-plus</v-icon>
         </v-btn>
       </v-banner>
-      <v-container>
-        <v-dialog
-          v-model="dialog"
-          fullscreen
-          hide-overlay
-          persistent
-          transition="dialog-bottom-transition"
-        >
-          <v-card>
-            <v-toolbar
-              dark
-              color="deep-purple accent-3"
-            >
-              <v-btn
-                icon
-                dark
-                @click="dialog = false"
-              >
-                <v-icon>mdi-close</v-icon>
-              </v-btn>
-              <v-toolbar-title>Set Items</v-toolbar-title>
-              <v-spacer></v-spacer>
-              <v-toolbar-items>
-                <v-btn
-                  dark
-                  text
-                  @click="saveItem"
-                >
-                  Save
-                </v-btn>
-              </v-toolbar-items>
-            </v-toolbar>
-            <v-row>
-              <v-col cols="12"
-                sm="6"
-                md="4"
-                lg="3"
-              >
-                <v-color-picker class="ma-5" v-model="color"></v-color-picker>
-              </v-col>
-              <v-col cols="12"
-                md="6"
-                lg="6"
-              >
-                <v-text-field
-                  v-model="itemName"
-                  label="Name"
-                  clearable
-                  hide-details="auto"
-                ></v-text-field>
-                <v-text-field class="mb-5"
-                  v-model="itemType"
-                  label="Type"
-                  clearable
-                  hide-details="auto"
-                >
-                </v-text-field>
-              </v-col>
-            </v-row>
-          </v-card>
-        </v-dialog>
-      <data-table
-        :items="items"
-        @deleteItem="deleteItem"
+      <Dialog
+        :itemName.sync = "itemName"
+        :itemType.sync = "itemType"
+        :hex.sync = "color"
+        :dialog.sync="dialog"
+        :type="updateItemId"
         @updateItem="updateItem"
+        @saveItem="saveItem"
       />
+      <v-container>
+        <data-table
+          :items="items"
+          @deleteItem = "deleteItem"
+          @callDialog = "callDialog"
+        />
       </v-container>
     </v-main>
   </v-app>
 </template>
 
 <script>
-import DataTable from './components/DataTable.vue';
 import {v4 as uuidv4} from 'uuid'
+import DataTable from './components/DataTable.vue';
+import Dialog from './components/Dialog.vue'
 
 
 export default {  
   name: 'App',
 
   components: {
-    DataTable
+    DataTable, Dialog
   },
 
   data: () => ({
-      types: ['hex', 'hexa', 'rgba', 'hsla', 'hsva'],
-      type: 'hex',
-      hex: '#FF00FF',
-      hexa: '#FF00FFFF',
-      rgba: { r: 255, g: 0, b: 255, a: 1 },
-      hsla: { h: 300, s: 1, l: 0.5, a: 1 },
-      hsva: { h: 300, s: 1, v: 1, a: 1 },
+      color: '',
       itemName: '',
       itemType: '',
       temp: [],
       dialog: false,
+      updateItemId: 'new',
   }),
 
-  computed: {
-      color: {
-        get () {
-          return this[this.type]
-        },
-        set (value) {
-          this[this.type] = value
-        },
-      },
-      
+  computed: {     
       items(){
         try{
           let temp = this.temp
@@ -140,6 +76,14 @@ export default {
   },
 
   methods:{
+    deleteItem(itemId){
+      let items = this.items
+      let index = this.findeIndexById(itemId)
+      items.splice(index,index+1)
+      this.temp= items
+      localStorage.setItem('items',JSON.stringify(items))
+    },
+
     saveItem(){
       if(this.itemType.length == 0 || this.itemName == 0){
         this.$emit('empty-input')
@@ -158,24 +102,45 @@ export default {
       localStorage.setItem('items', JSON.stringify(items))
     },
 
-    updateItem(index){
-      let items = this.items
-      this.temp = items
-      this.itemName = items[index].name
-      this.itemType = items[index].type
-      this.hex = items[index].color
+    updateItem(itemId){
+      if(this.itemType.length == 0 || this.itemName == 0){
+        this.$emit('empty-input')
+        return
+      }
+      let index = this.findeIndexById(itemId)
+      let item = this.items[index]
+      item.name = this.itemName
+      item.type = this.itemType
+      item.color = this.color
+      this.dialog = false
+      localStorage.setItem('items', JSON.stringify(this.items))
+    },
+
+    callDialog(itemId){
+      if(itemId=='new')
+        this.setup('','','')
+      else{
+        let items = this.items
+        this.temp = items
+        let index = this.findeIndexById(itemId)
+        let item = items[index]
+        this.setup(item.name, item.type, item.color)
+      }
+      this.updateItemId = itemId
       this.dialog = true
     },
 
-    deleteItem(id){
-      let items = this.items
-      let index
-      for (let i in items)
-        if(items[i].id == id)
-          index= i
-      items.splice(index,index+1)
-      this.temp= items
-      localStorage.setItem('items',JSON.stringify(items))
+    setup(name, type, color){
+      this.itemName = name
+      this.itemType = type
+      this.color = color
+    },
+
+    findeIndexById(itemId){
+      for (let index in this.items)
+        if(this.items[index].id == itemId)
+          return index
+      return -1
     },
 
   },
